@@ -1,4 +1,4 @@
-;;; clocker --- Note taker and clock-in enforcer
+;;; clocker.el --- Note taker and clock-in enforcer
 ;;; Commentary:
 
 ;; Copyright (C) 2015 Roman Gonzalez.
@@ -7,7 +7,7 @@
 ;; Maintainer: Roman Gonzalez <romanandreg@gmail.com>
 ;; Version: 0.0.1
 ;; Package-Requires: ((projectile "0.11.0") (dash "2.10"))
-;; Keywords: terminal
+;; Keywords: org
 
 ;; This file is not part of GNU Emacs.
 
@@ -25,7 +25,7 @@
 (require 'dash)
 (require 'em-glob)
 (require 'projectile)
-(require 'vc)
+(require 'vc-git)
 
 ;;; Code:
 
