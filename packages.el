@@ -1,9 +1,9 @@
 (defvar clocker-packages
-  '(org)
+  '(clocker)
   "clocker dependencies")
 
 (defvar clocker-enable-after-save-hook nil
-  "Enables clocker's `after-save-hook' on spacemacs when true.")
+  "Enables clocker's `after-save-hook' automatically when true.")
 
 (defun clocker/init-org ()
   (use-package org
@@ -14,4 +14,3 @@
       (when (fboundp 'spacemacs/mode-line-prepare-left)
         (defadvice spacemacs/mode-line-prepare-left (around compile activate)
         (setq ad-return-value (clocker/add-clock-in-to-mode-line ad-do-it)))))))
-

@@ -24,6 +24,7 @@
 
 (require 'dash)
 (require 'em-glob)
+(require 'org-clock)
 (require 'projectile)
 (require 'vc-git)
 
@@ -38,10 +39,16 @@
   :group 'clocker)
 
 (defvar clocker-issue-format-regex nil
-  "Holds regex that extracts issue-number from a branch namae.
+  "Holds regex that extracts issue-id from a branch namae.
 
 When this value is null, clocker won't infer org file names from
 branch names.")
+
+(defvar clocker-extra-annoying t
+  "Performs annoying questions to disrupt work concentration when true.
+
+This is recommended if you really want to enforce yourself to
+clock-in.")
 
 (defvar clocker-project-issue-folder "org"
   "Name of the directory that will hold the org files per issue.")
@@ -129,14 +136,14 @@ returns nil if it can't find any"
 ;;;;;;;;;;;;;;;;;;;;
 ;; find org file per-issue
 
-(defun clocker/issue-org-file (project-root issue-number)
-  "Use PROJECT-ROOT and ISSUE-NUMBER to infer a file name."
+(defun clocker/issue-org-file (project-root issue-id)
+  "Use PROJECT-ROOT and ISSUE-ID to infer a file name."
   (concat project-root
           (file-name-as-directory clocker-project-issue-folder)
-          (concat issue-number ".org")))
+          (concat issue-id ".org")))
 
-(defun clocker/get-issue-number-from-branch-name (issue-regex branch-name)
-  "Use ISSUE-REGEX to get issue-number from a BRANCH-NAME."
+(defun clocker/get-issue-id-from-branch-name (issue-regex branch-name)
+  "Use ISSUE-REGEX to get issue-id from a BRANCH-NAME."
   (when (and issue-regex branch-name (string-match issue-regex branch-name))
     (match-string 0 branch-name)))
 
@@ -147,9 +154,47 @@ This works when the `clocker-issue-format-regex` is not nil."
   (when clocker-issue-format-regex
       (let* ((project-root (projectile-project-root))
              (branch-name (car (vc-git-branches)))
-             (issue-number (clocker/get-issue-number-from-branch-name clocker-issue-format-regex
+             (issue-id (clocker/get-issue-id-from-branch-name clocker-issue-format-regex
                                                                       branch-name)))
-        (and issue-number (clocker/issue-org-file project-root issue-number)))))
+        (and issue-id (clocker/issue-org-file project-root issue-id)))))
+
+
+;; clocked-in functionality
+
+;;;###autoload
+(defun clocker/org-clock-goto (&optional select)
+  "Open file that has the currently clocked-in entry, or to the
+most recently clocked one.
+
+With prefix arg SELECT, offer recently clocked tasks for selection."
+  (interactive "@P")
+  (let* ((current (current-buffer))
+         (recent nil)
+         (m (cond
+             (select
+              (or (org-clock-select-task "Select task to go to: ")
+                  (error "No task selected")))
+             ((org-clocking-p) org-clock-marker)
+             ((and org-clock-goto-may-find-recent-task
+                   (car org-clock-history)
+                   (marker-buffer (car org-clock-history)))
+              (setq recent t)
+              (car org-clock-history))
+             (t (error "No active or recent clock task")))))
+
+
+    (unless (get-buffer-window (marker-buffer m) 0)
+      (pop-to-buffer (marker-buffer m) nil t)
+      (if (or (< m (point-min)) (> m (point-max))) (widen))
+      (goto-char m)
+      (org-show-entry)
+      (org-back-to-heading t)
+      (org-cycle-hide-drawers 'children)
+      (org-reveal)
+      (if recent
+          (message "No running clock, this is the most recently clocked task"))
+      (run-hooks 'org-clock-goto-hook)
+      (other-window 1))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; main functions
@@ -184,9 +229,12 @@ tree hierarchy and finds the closest org file."
          (current-ext (and current-file (file-name-extension current-file))))
     (if (and current-file
              (clocker/check-clocked-in-with-file-extension? current-ext))
-        (when (not (clocker/org-clocking-p))
-          (clocker/open-org-file)
-          (yes-or-no-p "Did you remember to clock in?")))))
+        (if (not (clocker/org-clocking-p))
+            (progn
+              (clocker/open-org-file)
+              (when clocker-extra-annoying
+                (yes-or-no-p "Did you remember to clock in?")))
+          (clocker/org-clock-goto)))))
 
 
 (provide 'clocker)
