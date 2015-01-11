@@ -1,23 +1,12 @@
 ```
-                                                                       ,+ii;      ;ii+,
-                                                                    .iBMMMMR;    ;RMMMMBi.
-                                                                   ;RMMMMRi. .::. .iRMMMMR;
-                                                                  ;RMMMMY;iVRMMMMRVi;YMMMMR;
-                                                                  BMMMY+VMXi;.,.:;iXMV+YMMMR
-                                                                 :MMV,iMX,i+  Bt  i:,XMi,VMM:
- .o88b. db       .d88b.   .o88b. db   dD d88888b d8888b.          i; tMi  ++     :t;  iMt ;i
-d8P  Y8 88      .8P  Y8. d8P  Y8 88 ,8P' 88'     88  `8D            +MiiY          :iV.tM;
-8P      88      88    88 8P      88,8P   88ooooo 88oobY'            RB ,;       .+Vi,i..RX
-8b      88      88    88 8b      88`8b   88~~~~~ 88`8b             ,Mi::     iBXRY:   . YM:
-Y8b  d8 88booo. `8b  d8' Y8b  d8 88 `88. 88.     88 `88.           ;MiYX    ,MMMY    iR,iM:
- `Y88P' Y88888P  `Y88P'  `Y88P'  YP   YD Y88888P 88   YD           ,Mt       iRM;     . YM:
-                                                                    BB.ii     ;M;   ,i :RY
-                                                                   ;MV++      ti   ;t.VR,
-                                                                    +MV..V+  . ;,Y: .VM+
-                                                                     ;RRii, ,M+ :i:iRB;
-                                                                    ,VRBXBMVi;+;;iVMBXBRV:
-                                                                    XMMMB ;iYVBBVYi, RMMMt
-                                                                    ;RMRi            iMMR;
+
+ .o88b. db       .d88b.   .o88b. db   dD d88888b d8888b.
+d8P  Y8 88      .8P  Y8. d8P  Y8 88 ,8P' 88'     88  `8D
+8P      88      88    88 8P      88,8P   88ooooo 88oobY'
+8b      88      88    88 8b      88`8b   88~~~~~ 88`8b  
+Y8b  d8 88booo. `8b  d8' Y8b  d8 88 `88. 88.     88 `88.
+ `Y88P' Y88888P  `Y88P'  `Y88P'  YP   YD Y88888P 88   YD
+
 ```
 
 # Summary
