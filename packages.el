@@ -2,15 +2,18 @@
   '(clocker)
   "clocker dependencies")
 
-(defvar clocker-enable-after-save-hook nil
-  "Enables clocker's `after-save-hook' automatically when true.")
+(defcustom clocker-enable-on-initialize nil
+  "Enables clocker's features on initialization."
+  :group 'clocker)
 
-(defun clocker/init-org ()
+(defadvice spacemacs/mode-line-prepare-left (around compile)
+        (setq ad-return-value (clocker/add-clock-in-to-mode-line ad-do-it)))
+
+(defun clocker/init-clocker ()
   (use-package org
     :config
     (progn
-      (when clocker-enable-after-save-hook
-        (add-hook 'after-save-hook 'clocker/after-save-hook))
+      (when clocker-enable-on-initialize
+        (clocker-mode 1))
       (when (fboundp 'spacemacs/mode-line-prepare-left)
-        (defadvice spacemacs/mode-line-prepare-left (around compile activate)
-        (setq ad-return-value (clocker/add-clock-in-to-mode-line ad-do-it)))))))
+        (ad-activate spacemacs/mode-line-prepare-left)))))
