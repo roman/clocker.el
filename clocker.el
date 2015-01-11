@@ -38,26 +38,30 @@
   "Clocker's face for CLOCK-IN mode-line message."
   :group 'clocker)
 
-(defvar clocker-issue-format-regex nil
-  "Holds regex that extracts issue-id from a branch namae.
+(defcustom clocker-issue-format-regex nil
+  "Holds regex that extracts issue-id from a branch name.
 
 When this value is null, clocker won't infer org file names from
-branch names.")
+branch names."
+:group 'clocker)
 
-(defvar clocker-extra-annoying t
+(defcustom clocker-extra-annoying t
   "Performs annoying questions to disrupt work concentration when true.
 
 This is recommended if you really want to enforce yourself to
-clock-in.")
+clock-in."
+:group 'clocker)
 
-(defvar clocker-project-issue-folder "org"
-  "Name of the directory that will hold the org files per issue.")
+(defcustom clocker-project-issue-folder "org"
+  "Name of the directory that will hold the org files per issue."
+:group 'clocker)
 
-(defvar clocker-skip-after-save-hook-on-extensions '("org")
+(defcustom clocker-skip-after-save-hook-on-extensions '("org")
   "Holds file extensions that won't be affected by clocker's `after-save-hook'.
 
 If a file extension is here, the `after-save-hook' won't do any
-checks if not clocked in")
+checks if not clocked in"
+:group 'clocker)
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; util
@@ -236,6 +240,15 @@ tree hierarchy and finds the closest org file."
               (when clocker-extra-annoying
                 (yes-or-no-p "Did you remember to clock in?")))
           (clocker/org-clock-goto)))))
+
+;;;###autoload
+(define-minor-mode clocker-mode
+  "Enable clock-in enforce strategies"
+  :lighter " Clocker"
+  :global t
+  (if clocker-mode
+      (add-hook 'after-save-hook 'clocker/after-save-hook)
+    (remove-hook 'after-save-hook 'clocker/after-save-hook)))
 
 
 (provide 'clocker)
