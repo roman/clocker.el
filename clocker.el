@@ -222,6 +222,7 @@ tree hierarchy and finds the closest org file."
         (find-file file-orgfile)
       (message "clocker: could not find/infer org file."))))
 
+;;;###autoload
 (defun clocker/after-save-hook ()
   "Execute `'clocker/open-org-file' and asks annoying questions if not clocked-in."
   (interactive)
