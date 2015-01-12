@@ -33,7 +33,7 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; customizable variables
 
-(defface clocker/mode-line-clock-in-face
+(defface clocker-mode-line-clock-in-face
   '((t (:foreground "white" :background "#F2686C" :inherit mode-line)))
   "Clocker's face for CLOCK-IN mode-line message."
   :group 'clocker)
@@ -63,27 +63,34 @@ If a file extension is here, the `after-save-hook' won't do any
 checks if not clocked in"
 :group 'clocker)
 
+(defcustom clocker-skip-after-save-hook-on-mode '("git-commit-mode")
+  "Holds mode names that won't be affected by clocker's `after-save-hook'.
+
+If a buffer has mode that belongs to this list, the
+`after-save-hook' won't do any checks if not clocked in"
+:group 'clocker)
+
 ;;;;;;;;;;;;;;;;;;;;
 ;; util
 
-(defun clocker/org-clocking-p ()
+(defun clocker-org-clocking-p ()
   "Check if org clock-in is on."
   (and (fboundp 'org-clocking-p)
        (org-clocking-p)))
 
 (defconst clocker-mode-line-widget
   (powerline-raw "CLOCK-IN "
-                 'clocker/mode-line-clock-in-face
+                 'clocker-mode-line-clock-in-face
                  'l)
   "CLOCK-IN powerline widget.")
 
-(defun clocker/add-clock-in-to-mode-line (lhs)
+(defun clocker-add-clock-in-to-mode-line (lhs)
   "Add a CLOCK-IN string to the mode-line list.
 
 This string is put in the second position on the given mode-line
 list (LHS)."
   (let ((new-lhs
-         (if (not (clocker/org-clocking-p))
+         (if (not (clocker-org-clocking-p))
              (-insert-at 1 clocker-mode-line-widget lhs)
            lhs)))
     new-lhs))
@@ -91,11 +98,12 @@ list (LHS)."
 ;;;;;;;;;;;;;;;;;;;;
 ;; find buffer with org-file open
 
-(defun clocker/check-clocked-in-with-file-extension? (file-ext)
+(defun clocker-should-perform-after-save-hook? (file-ext)
   "Check if clocker ignores saves on file with extension file-ext"
-  (not (-contains? clocker-skip-after-save-hook-on-extensions file-ext)))
+  (and (not (-contains? clocker-skip-after-save-hook-on-extensions file-ext))
+       (not (-contains? clocker-skip-after-save-hook-on-mode major-mode))))
 
-(defun clocker/first-org-buffer ()
+(defun clocker-first-org-buffer ()
   "Return first buffer that has an .org extension."
   (->> (buffer-list)
        (--map (buffer-file-name it))
@@ -105,7 +113,7 @@ list (LHS)."
 ;;;;;;;;;;;;;;;;;;;;
 ;; find global org-file (sitting on home most likely)
 
-(defun clocker/get-parent-dir (dir)
+(defun clocker-get-parent-dir (dir)
   "Return the parent directory path of given DIR."
   (if (or (not dir)
           (string-equal dir "/"))
@@ -113,7 +121,7 @@ list (LHS)."
     (file-name-directory
      (directory-file-name dir))))
 
-(defun clocker/locate-dominating-file (glob &optional start-dir)
+(defun clocker-locate-dominating-file (glob &optional start-dir)
     "Locates a file on the hierarchy tree using a GLOB.
 
 Similar `locate-dominating-file', although accepts a GLOB instead
@@ -128,45 +136,45 @@ If START-DIR is not specified, starts in `default-directory`."
        (file-found (concat dir (car file-found)))
        ((not (or (string= dir "/")
                  (string= dir "~/")))
-        (clocker/locate-dominating-file glob (clocker/get-parent-dir dir)))
+        (clocker-locate-dominating-file glob (clocker-get-parent-dir dir)))
        (t nil))))
 
-(defun clocker/find-dominating-org-file ()
+(defun clocker-find-dominating-org-file ()
   "Lookup on directory tree for a file with an org extension.
 
 returns nil if it can't find any"
-  (clocker/locate-dominating-file "*.org"))
+  (clocker-locate-dominating-file "*.org"))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; find org file per-issue
 
-(defun clocker/issue-org-file (project-root issue-id)
+(defun clocker-issue-org-file (project-root issue-id)
   "Use PROJECT-ROOT and ISSUE-ID to infer a file name."
   (concat project-root
           (file-name-as-directory clocker-project-issue-folder)
           (concat issue-id ".org")))
 
-(defun clocker/get-issue-id-from-branch-name (issue-regex branch-name)
+(defun clocker-get-issue-id-from-branch-name (issue-regex branch-name)
   "Use ISSUE-REGEX to get issue-id from a BRANCH-NAME."
   (when (and issue-regex branch-name (string-match issue-regex branch-name))
     (match-string 0 branch-name)))
 
-(defun clocker/find-issue-org-file ()
+(defun clocker-find-issue-org-file ()
   "Infer an org file name from issue number on current's branch name.
 
 This works when the `clocker-issue-format-regex` is not nil."
   (when clocker-issue-format-regex
       (let* ((project-root (projectile-project-root))
              (branch-name (car (vc-git-branches)))
-             (issue-id (clocker/get-issue-id-from-branch-name clocker-issue-format-regex
+             (issue-id (clocker-get-issue-id-from-branch-name clocker-issue-format-regex
                                                                       branch-name)))
-        (and issue-id (clocker/issue-org-file project-root issue-id)))))
+        (and issue-id (clocker-issue-org-file project-root issue-id)))))
 
 
 ;; clocked-in functionality
 
 ;;;###autoload
-(defun clocker/org-clock-goto (&optional select)
+(defun clocker-org-clock-goto (&optional select)
   "Open file that has the currently clocked-in entry, or to the
 most recently clocked one.
 
@@ -204,7 +212,7 @@ With prefix arg SELECT, offer recently clocked tasks for selection."
 ;; main functions
 
 ;;;###autoload
-(defun clocker/open-org-file ()
+(defun clocker-open-org-file ()
   "Open an appropiate org file.
 
 It traverses files in the following order:
@@ -219,27 +227,27 @@ extension, if found switch to it.
 3) If `clocker-issue-format-regex' is nil, it will traverse your
 tree hierarchy and finds the closest org file."
   (interactive)
-  (let* ((buffer-orgfile (clocker/first-org-buffer))
-         (file-orgfile (or buffer-orgfile (clocker/find-issue-org-file)))
-         (file-orgfile (or file-orgfile (clocker/find-dominating-org-file))))
+  (let* ((buffer-orgfile (clocker-first-org-buffer))
+         (file-orgfile (or buffer-orgfile (clocker-find-issue-org-file)))
+         (file-orgfile (or file-orgfile (clocker-find-dominating-org-file))))
     (if file-orgfile
         (find-file file-orgfile)
       (message "clocker: could not find/infer org file."))))
 
 ;;;###autoload
-(defun clocker/after-save-hook ()
-  "Execute `'clocker/open-org-file' and asks annoying questions if not clocked-in."
+(defun clocker-after-save-hook ()
+  "Execute `'clocker-open-org-file' and asks annoying questions if not clocked-in."
   (interactive)
   (let* ((current-file (buffer-file-name))
          (current-ext (and current-file (file-name-extension current-file))))
     (if (and current-file
-             (clocker/check-clocked-in-with-file-extension? current-ext))
-        (if (not (clocker/org-clocking-p))
+             (clocker-should-perform-after-save-hook? current-ext))
+        (if (not (clocker-org-clocking-p))
             (progn
-              (clocker/open-org-file)
+              (clocker-open-org-file)
               (when clocker-extra-annoying
                 (yes-or-no-p "Did you remember to clock in?")))
-          (clocker/org-clock-goto)))))
+          (clocker-org-clock-goto)))))
 
 ;;;###autoload
 (define-minor-mode clocker-mode
@@ -247,8 +255,8 @@ tree hierarchy and finds the closest org file."
   :lighter " Clocker"
   :global t
   (if clocker-mode
-      (add-hook 'after-save-hook 'clocker/after-save-hook)
-    (remove-hook 'after-save-hook 'clocker/after-save-hook)))
+      (add-hook 'after-save-hook 'clocker-after-save-hook)
+    (remove-hook 'after-save-hook 'clocker-after-save-hook)))
 
 
 (provide 'clocker)
