@@ -63,6 +63,12 @@ If a file extension is here, the `after-save-hook' won't do any
 checks if not clocked in"
 :group 'clocker)
 
+(defcustom clocker-keep-org-file-always-visible t
+  "Opens a buffer with the org-file if hidden.
+
+This happens when clocked-in."
+  :group 'clocker)
+
 (defcustom clocker-skip-after-save-hook-on-mode '("git-commit-mode")
   "Holds mode names that won't be affected by clocker's `after-save-hook'.
 
@@ -247,7 +253,8 @@ tree hierarchy and finds the closest org file."
               (clocker-open-org-file)
               (when clocker-extra-annoying
                 (yes-or-no-p "Did you remember to clock in?")))
-          (clocker-org-clock-goto)))))
+          (when clocker-keep-org-file-always-visible
+            (clocker-org-clock-goto))))))
 
 ;;;###autoload
 (define-minor-mode clocker-mode
@@ -257,7 +264,6 @@ tree hierarchy and finds the closest org file."
   (if clocker-mode
       (add-hook 'after-save-hook 'clocker-after-save-hook)
     (remove-hook 'after-save-hook 'clocker-after-save-hook)))
-
 
 (provide 'clocker)
 
