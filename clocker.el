@@ -112,8 +112,9 @@ list (LHS)."
 (defun clocker-first-org-buffer ()
   "Return first buffer that has an .org extension."
   (->> (buffer-list)
-       (--map (buffer-file-name it))
-       (--filter (and it (string-match ".org$" it)))
+       (--filter
+        (let ((buffer-name (buffer-file-name it)))
+          (and buffer-name (string-match ".org$" buffer-name))))
        -first-item))
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -198,11 +199,11 @@ With prefix arg SELECT, offer recently clocked tasks for selection."
                    (marker-buffer (car org-clock-history)))
               (setq recent t)
               (car org-clock-history))
-             (t (error "No active or recent clock task")))))
+             (t (error "No active or recent clock task"))))
+         (org-buffer (marker-buffer m)))
 
-
-    (unless (get-buffer-window (marker-buffer m) 0)
-      (pop-to-buffer (marker-buffer m) nil t)
+    (unless (get-buffer-window org-buffer 0)
+      (pop-to-buffer org-buffer nil t)
       (if (or (< m (point-min)) (> m (point-max))) (widen))
       (goto-char m)
       (org-show-entry)
@@ -233,12 +234,18 @@ extension, if found switch to it.
 3) If `clocker-issue-format-regex' is nil, it will traverse your
 tree hierarchy and finds the closest org file."
   (interactive)
-  (let* ((buffer-orgfile (clocker-first-org-buffer))
-         (file-orgfile (or buffer-orgfile (clocker-find-issue-org-file)))
-         (file-orgfile (or file-orgfile (clocker-find-dominating-org-file))))
-    (if file-orgfile
-        (find-file file-orgfile)
-      (message "clocker: could not find/infer org file."))))
+  (let* ((buffer-orgfile (clocker-first-org-buffer)))
+    (cond
+     (buffer-orgfile
+      (progn
+        (delete-other-windows)
+        (switch-to-buffer buffer-orgfile)))
+     (t
+      (let* ((file-orgfile (clocker-find-issue-org-file))
+             (file-orgfile (or file-orgfile (clocker-find-dominating-org-file))))
+        (if file-orgfile
+            (find-file file-orgfile)
+          (message "clocker: could not find/infer org file.")))))))
 
 ;;;###autoload
 (defun clocker-after-save-hook ()
