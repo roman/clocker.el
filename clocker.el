@@ -76,6 +76,12 @@ If a buffer has mode that belongs to this list, the
 `after-save-hook' won't do any checks if not clocked in"
 :group 'clocker)
 
+(defcustom clocker-search-org-buffer-in-all-frames t
+  "Search for an org buffer on all frames.
+
+This variable will affect behavior once you are clocked-in, is
+particularly handy when you have more than one frame.")
+
 ;;;;;;;;;;;;;;;;;;;;
 ;; util
 
@@ -202,7 +208,10 @@ With prefix arg SELECT, offer recently clocked tasks for selection."
              (t (error "No active or recent clock task"))))
          (org-buffer (marker-buffer m)))
 
-    (unless (get-buffer-window org-buffer 0)
+    (unless (get-buffer-window org-buffer
+                               (if clocker-search-org-buffer-in-all-frames
+                                   t
+                                 0))
       (pop-to-buffer org-buffer nil t)
       (if (or (< m (point-min)) (> m (point-max))) (widen))
       (goto-char m)
