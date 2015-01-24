@@ -278,7 +278,7 @@ tree hierarchy and finds the closest org file."
   :lighter " Clocker"
   :global t
   (if clocker-mode
-      (add-hook 'after-save-hook 'clocker-after-save-hook)
+      (add-hook 'after-save-hook 'clocker-after-save-hook t)
     (remove-hook 'after-save-hook 'clocker-after-save-hook)))
 
 (provide 'clocker)
