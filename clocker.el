@@ -43,25 +43,25 @@
 
 When this value is null, clocker won't infer org file names from
 branch names."
-:group 'clocker)
+  :group 'clocker)
 
 (defcustom clocker-extra-annoying t
-  "Performs annoying questions to disrupt work concentration when true.
+  "Stops file from being saved when true and not clocked-in.
 
 This is recommended if you really want to enforce yourself to
 clock-in."
-:group 'clocker)
+  :group 'clocker)
 
 (defcustom clocker-project-issue-folder "org"
   "Name of the directory that will hold the org files per issue."
-:group 'clocker)
+  :group 'clocker)
 
 (defcustom clocker-skip-after-save-hook-on-extensions '("org")
   "Holds file extensions that won't be affected by clocker's `after-save-hook'.
 
 If a file extension is here, the `after-save-hook' won't do any
 checks if not clocked in"
-:group 'clocker)
+  :group 'clocker)
 
 (defcustom clocker-keep-org-file-always-visible t
   "Opens a buffer with the org-file if hidden.
