@@ -74,13 +74,21 @@ This happens when clocked-in."
 
 If a buffer has mode that belongs to this list, the
 `after-save-hook' won't do any checks if not clocked in"
-:group 'clocker)
+  :group 'clocker)
 
 (defcustom clocker-search-org-buffer-in-all-frames t
   "Search for an org buffer on all frames.
 
 This variable will affect behavior once you are clocked-in, is
-particularly handy when you have more than one frame.")
+particularly handy when you have more than one frame."
+  :group 'clocker)
+
+(defvar clocker-on-auto-save nil
+  "Indicate if the current save is happening because of an auto-save.
+
+This variable will be set to `t' when a callback registered in
+the `auto-save-hook' is called.  Once the clocker
+`after-save-hook' is called, this variable is going to be set to nil.")
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; util
@@ -110,7 +118,7 @@ list (LHS)."
 ;;;;;;;;;;;;;;;;;;;;
 ;; find buffer with org-file open
 
-(defun clocker-should-perform-after-save-hook? (file-ext)
+(defun clocker-should-perform-save-hook? (file-ext)
   "Check if clocker ignores saves on file with extension file-ext"
   (and (not (-contains? clocker-skip-after-save-hook-on-extensions file-ext))
        (not (-contains? clocker-skip-after-save-hook-on-mode major-mode))))
@@ -256,21 +264,45 @@ tree hierarchy and finds the closest org file."
             (find-file file-orgfile)
           (message "clocker: could not find/infer org file.")))))))
 
+(defun clocker-save-hook (question-msg raise-exception)
+  (interactive)
+  (if clocker-on-auto-save
+      ;; set `clocker-on-auto-save' to nil in case a new save hook is
+      ;; called
+      (setq clocker-on-auto-save nil)
+    ;; else
+    (let* ((current-file (buffer-file-name))
+           (current-ext (and current-file (file-name-extension current-file))))
+      (when (and current-file
+                 (clocker-should-perform-save-hook? current-ext))
+
+          (if (not (clocker-org-clocking-p))
+              (progn
+                (clocker-open-org-file)
+                (yes-or-no-p question-msg)
+                (when raise-exception (throw 'clocker-clock-in t)))
+            ;; else
+            (when clocker-keep-org-file-always-visible
+              (clocker-org-clock-goto)))))))
+
+;;;###autoload
+(defun clocker-auto-save-hook ()
+  "Set `clocker-on-auto-save' to t"
+  (interactive)
+  (setq clocker-on-auto-save t)
+  (save-buffer))
+
+;;;###autoload
+(defun clocker-before-save-hook ()
+  "Execute `clocker-open-org-file' and asks even more annoying questions if not clocked-in."
+  (interactive)
+  (clocker-save-hook "Won't save until you clock in, continue?" t))
+
 ;;;###autoload
 (defun clocker-after-save-hook ()
   "Execute `'clocker-open-org-file' and asks annoying questions if not clocked-in."
   (interactive)
-  (let* ((current-file (buffer-file-name))
-         (current-ext (and current-file (file-name-extension current-file))))
-    (if (and current-file
-             (clocker-should-perform-after-save-hook? current-ext))
-        (if (not (clocker-org-clocking-p))
-            (progn
-              (clocker-open-org-file)
-              (when clocker-extra-annoying
-                (yes-or-no-p "Did you remember to clock in?")))
-          (when clocker-keep-org-file-always-visible
-            (clocker-org-clock-goto))))))
+  (clocker-save-hook "Did you remember to clock in?" nil))
 
 ;;;###autoload
 (define-minor-mode clocker-mode
@@ -278,8 +310,16 @@ tree hierarchy and finds the closest org file."
   :lighter " Clocker"
   :global t
   (if clocker-mode
-      (add-hook 'after-save-hook 'clocker-after-save-hook t)
-    (remove-hook 'after-save-hook 'clocker-after-save-hook)))
+      (progn
+        (add-hook 'auto-save-hook  'clocker-auto-save-hook t)
+        (if clocker-extra-annoying
+            (add-hook 'before-save-hook 'clocker-before-save-hook t)
+          ;; else
+          (add-hook 'after-save-hook 'clocker-after-save-hook t)))
+    (progn
+      (remove-hook 'before-save-hook 'clocker-before-save-hook)
+      (remove-hook 'after-save-hook 'clocker-after-save-hook)
+      (remove-hook 'auto-save-hook 'clocker-auto-save-hook))))
 
 (provide 'clocker)
 
