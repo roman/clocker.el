@@ -98,11 +98,12 @@ the `auto-save-hook' is called.  Once the clocker
   (and (fboundp 'org-clocking-p)
        (org-clocking-p)))
 
-(defconst clocker-mode-line-widget
-  (powerline-raw "CLOCK-IN "
-                 'clocker-mode-line-clock-in-face
-                 'l)
-  "CLOCK-IN powerline widget.")
+(eval-after-load 'powerline
+  '(defconst clocker-mode-line-widget
+     (powerline-raw "CLOCK-IN "
+                    'clocker-mode-line-clock-in-face
+                    'l)
+     "CLOCK-IN powerline widget."))
 
 (defun clocker-add-clock-in-to-mode-line (lhs)
   "Add a CLOCK-IN string to the mode-line list.
