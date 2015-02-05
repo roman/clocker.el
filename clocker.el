@@ -290,7 +290,8 @@ tree hierarchy and finds the closest org file."
   "Set `clocker-on-auto-save' to t"
   (interactive)
   (setq clocker-on-auto-save t)
-  (save-buffer))
+  (when (buffer-file-name)
+    (save-buffer)))
 
 ;;;###autoload
 (defun clocker-before-save-hook ()
