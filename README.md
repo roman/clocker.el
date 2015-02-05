@@ -1,14 +1,3 @@
-```
-
- .o88b. db       .d88b.   .o88b. db   dD d88888b d8888b.
-d8P  Y8 88      .8P  Y8. d8P  Y8 88 ,8P' 88'     88  `8D
-8P      88      88    88 8P      88,8P   88ooooo 88oobY'
-8b      88      88    88 8b      88`8b   88~~~~~ 88`8b  
-Y8b  d8 88booo. `8b  d8' Y8b  d8 88 `88. 88.     88 `88.
- `Y88P' Y88888P  `Y88P'  `Y88P'  YP   YD Y88888P 88   YD
-
-```
-
 # Summary
 
 `clocker.el` is a an extension for org-mode that facilitates remembering
@@ -57,12 +46,25 @@ a file is saved it will prompt the org file buffer.
 
 # Spacemacs support
 
-To use, just clone this repo in your `~/.emacs.d/private` folder and add
-`clocker` to your list of layers in your `~/.spacemacs` file.
+On a private layer, paste the following code:
 
-When using in combination with spacemacs it will add a `CLOCK-IN`
-message on the right side of your evil state indicator when not
-clocked-in. It will also enable the `after-save-hook` by default.
+```elisp
+
+(def your-layer-dependencies '(clocker))
+
+(defun your-layer/init-clocker ()
+  (interactive)
+  (use-package clocker
+        :config
+        (progn
+        (defadvice spacemacs/mode-line-prepare-left (around compile activate)
+            (setq ad-return-value (clocker-add-clock-in-to-mode-line ad-do-it)))
+        (clocker-mode 1))))
+
+```
+
+This will add a `CLOCK-IN` message on the right side of your evil
+state indicator when not clocked-in.
 
 # Documentation
 
