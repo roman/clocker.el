@@ -21,8 +21,8 @@ from your current branch and in combination of your project root and
 `project-root/clocker-project-issue-folder/issue-id.org`
 
 3) In case (2) fails, It will traverse your tree heriarchy, and will
-open the closest org file it can finds. Personally I suggest having 
-an org file on your home directory as a catch all of work I'm doing 
+open the closest org file it can finds. Personally I suggest having
+an org file on your home directory as a catch all of work I'm doing
 in general, and archive to a different org file if necessary.
 
 4) If all the above fail, clocker.el will print a message indicating
@@ -50,7 +50,7 @@ On a private layer, paste the following code:
 
 ```elisp
 
-(def your-layer-dependencies '(clocker))
+(def your-layer-packages '(clocker))
 
 (defun your-layer/init-clocker ()
   (interactive)
