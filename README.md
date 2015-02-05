@@ -52,19 +52,22 @@ On a private layer, paste the following code:
 
 (def your-layer-packages '(clocker))
 
+
+(defadvice spacemacs/mode-line-prepare-left (around compile)
+          (setq ad-return-value (clocker-add-clock-in-to-mode-line ad-do-it)))
+
 (defun your-layer/init-clocker ()
-  (interactive)
-  (use-package clocker
-        :config
-        (progn
-        (defadvice spacemacs/mode-line-prepare-left (around compile activate)
-            (setq ad-return-value (clocker-add-clock-in-to-mode-line ad-do-it)))
-        (clocker-mode 1))))
+  (use-package powerline
+    :config
+    (progn
+      (ad-activate 'spacemacs/mode-line-prepare-left)
+      (clocker-mode 1))))
+
 
 ```
 
-This will add a `CLOCK-IN` message on the right side of your evil
-state indicator when not clocked-in.
+This will add a `CLOCK-IN` message on the left side of your mode-line
+when not clocked-in.
 
 # Documentation
 
