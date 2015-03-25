@@ -343,7 +343,7 @@ tree hierarchy and finds the closest org file."
 
 ;;;###autoload
 (defun clocker-skip-on-major-mode (a-mode)
-  "Add current `major-mode' to the
+  "Add given mode to the
 `clocker-skip-after-save-hook-on-mode' list."
   (interactive
    (list (ido-completing-read
@@ -359,7 +359,7 @@ tree hierarchy and finds the closest org file."
 
 ;;;###autoload
 (defun clocker-stop-skip-on-major-mode (a-mode)
-  "Add current `major-mode' to the
+  "Remove given mode from
 `clocker-skip-after-save-hook-on-mode' list."
   (interactive
    (list (ido-completing-read
