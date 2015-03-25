@@ -1,7 +1,7 @@
 (source gnu)
 (source melpa)
 
-(package "clocker" "0.0.7"
+(package "clocker" "0.0.8"
          "Helps to remember to clock-in on org files when coding")
 
 (package-file "clocker.el")
