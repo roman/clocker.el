@@ -155,7 +155,9 @@ If START-DIR is not specified, starts in `default-directory`."
                                         nil
                                         (eshell-glob-regexp glob))))
       (cond
-       (file-found (concat dir (car file-found)))
+       ((and file-found
+             (not (file-directory-p file-found)))
+        (concat dir (car file-found)))
        ((not (or (string= dir "/")
                  (string= dir "~/")))
         (clocker-locate-dominating-file glob (clocker-get-parent-dir dir)))
