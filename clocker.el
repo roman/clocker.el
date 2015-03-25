@@ -121,8 +121,9 @@ list (LHS)."
 
 (defun clocker-should-perform-save-hook? (file-ext)
   "Check if clocker ignores saves on file with extension file-ext"
-  (and (not (-contains? clocker-skip-after-save-hook-on-extensions file-ext))
-       (not (-contains? clocker-skip-after-save-hook-on-mode major-mode))))
+  (and
+   (not (-contains? clocker-skip-after-save-hook-on-extensions file-ext))
+   (not (-contains? clocker-skip-after-save-hook-on-mode (symbol-name major-mode)))))
 
 (defun clocker-first-org-buffer ()
   "Return first buffer that has an .org extension."
