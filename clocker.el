@@ -156,7 +156,7 @@ If START-DIR is not specified, starts in `default-directory`."
                                         (eshell-glob-regexp glob))))
       (cond
        ((and file-found
-             (not (file-directory-p file-found)))
+             (not (file-directory-p (car file-found))))
         (concat dir (car file-found)))
        ((not (or (string= dir "/")
                  (string= dir "~/")))
