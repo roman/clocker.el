@@ -116,6 +116,37 @@ list (LHS)."
            lhs)))
     new-lhs))
 
+;; shamelessly stolen from
+;; http://stackoverflow.com/questions/5536304/emacs-stock-major-modes-list#answer-19165202
+(defun clocker-get-major-modes-list ()
+  "Return a list of all major-modes regsitered on the editor"
+  (let (output)
+    (mapatoms
+     #'(lambda (fn-symbol)
+         (and (commandp fn-symbol)
+              (string-match "-mode$" (symbol-name fn-symbol))
+              ;; auto-loaded
+              (or
+               (and (autoloadp (symbol-function fn-symbol))
+                    (let ((doc (documentation fn-symbol)))
+                      (when doc
+                        (and
+                         (let ((doc-split (help-split-fundoc doc fn-symbol)))
+                           (and
+                            ;; car is argument list
+                            doc-split
+                            ;; major mode starters have no arguments
+                            (null (cdr (read (car doc-split))))))
+                         ;; If the doc contains "minor"...
+                         (if (string-match "[mM]inor" doc)
+                             ;; it should also contain "major".
+                             (string-match "[mM]ajor" doc)
+                           ;; else we cannot decide therefrom
+                           t)))))
+               (null (help-function-arglist fn-symbol)))
+              (setq output (cons (symbol-name fn-symbol) output)))))
+    output))
+
 ;;;;;;;;;;;;;;;;;;;;
 ;; find buffer with org-file open
 
@@ -196,6 +227,7 @@ This works when the `clocker-issue-format-regex` is not nil."
         (and issue-id (clocker-issue-org-file project-root issue-id)))))
 
 
+;;;;;;;;;;;;;;;;;;;;
 ;; clocked-in functionality
 
 ;;;###autoload
@@ -308,6 +340,32 @@ tree hierarchy and finds the closest org file."
   "Execute `'clocker-open-org-file' and asks annoying questions if not clocked-in."
   (interactive)
   (clocker-save-hook "Did you remember to clock in?" nil))
+
+;;;###autoload
+(defun clocker-skip-on-major-mode (a-mode)
+  "Add current `major-mode' to the
+`clocker-skip-after-save-hook-on-mode' list."
+  (interactive
+   (list (ido-completing-read
+          "Which mode? "
+          (get-major-modes-list)
+          nil
+          nil
+          (symbol-name major-mode))))
+  (when (y-or-n-p
+         (format "Are you sure you want to add mode %s to clocker's ignore list" a-mode))
+    (add-to-list 'clocker-skip-after-save-hook-on-mode
+                 a-mode)))
+
+;;;###autoload
+(defun clocker-stop-skip-on-major-mode (a-mode)
+  "Add current `major-mode' to the
+`clocker-skip-after-save-hook-on-mode' list."
+  (interactive
+   (list (ido-completing-read
+          "Which mode? "
+          clocker-skip-after-save-hook-on-mode)))
+  (delete a-mode clocker-skip-after-save-hook-on-mode))
 
 ;;;###autoload
 (define-minor-mode clocker-mode
