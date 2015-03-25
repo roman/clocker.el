@@ -63,17 +63,17 @@ If a file extension is here, the `after-save-hook' won't do any
 checks if not clocked in"
   :group 'clocker)
 
-(defcustom clocker-keep-org-file-always-visible t
-  "Opens a buffer with the org-file if hidden.
-
-This happens when clocked-in."
-  :group 'clocker)
-
 (defcustom clocker-skip-after-save-hook-on-mode '("git-commit-mode")
   "Holds mode names that won't be affected by clocker's `after-save-hook'.
 
 If a buffer has mode that belongs to this list, the
 `after-save-hook' won't do any checks if not clocked in"
+  :group 'clocker)
+
+(defcustom clocker-keep-org-file-always-visible t
+  "Opens a buffer with the org-file if hidden.
+
+This happens when clocked-in."
   :group 'clocker)
 
 (defcustom clocker-search-org-buffer-in-all-frames t
