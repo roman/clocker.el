@@ -183,13 +183,17 @@ of simple string.
 
 If START-DIR is not specified, starts in `default-directory`."
     (let* ((dir (or start-dir default-directory))
-           (file-found (directory-files dir
-                                        nil
-                                        (eshell-glob-regexp glob))))
+           (files-found (directory-files dir
+                                         nil
+                                         (eshell-glob-regexp glob)))
+           (full-paths (->> files-found
+                            (--mapcat (let ((path (concat dir it)))
+                                        (if (file-directory-p path)
+                                            '()
+                                          (list path)))))))
       (cond
-       ((and file-found
-             (not (file-directory-p (car file-found))))
-        (concat dir (car file-found)))
+       (full-paths
+        (car full-paths))
        ((not (or (string= dir "/")
                  (string= dir "~/")))
         (clocker-locate-dominating-file glob (clocker-get-parent-dir dir)))
