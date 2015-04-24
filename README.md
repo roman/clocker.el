@@ -57,7 +57,7 @@ On a private layer, paste the following code:
           (setq ad-return-value (clocker-add-clock-in-to-mode-line ad-do-it)))
 
 (defun your-layer/init-clocker ()
-  (use-package powerline
+  (use-package clocker
     :config
     (progn
       (ad-activate 'spacemacs/mode-line-prepare-left)
