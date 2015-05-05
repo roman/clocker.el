@@ -112,7 +112,9 @@ This string is put in the second position on the given mode-line
 list (LHS)."
   (let ((new-lhs
          (if (not (clocker-org-clocking-p))
-             (-insert-at 1 clocker-mode-line-widget lhs)
+             (-insert-at (if (version< spacemacs-version "0.102") 1 3)
+                         clocker-mode-line-widget
+                         lhs)
            lhs)))
     new-lhs))
 
