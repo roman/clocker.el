@@ -5,7 +5,7 @@
 
 ;; Author: Roman Gonzalez <romanandreg@gmail.com>
 ;; Maintainer: Roman Gonzalez <romanandreg@gmail.com>
-;; Version: 0.0.9
+;; Version: 0.0.10
 ;; Package-Requires: ((projectile "0.11.0") (dash "2.10"))
 ;; Keywords: org
 
