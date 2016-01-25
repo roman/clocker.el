@@ -70,6 +70,13 @@ If a buffer has mode that belongs to this list, the
 `after-save-hook' won't do any checks if not clocked in"
   :group 'clocker)
 
+(defcustom clocker-skip-after-save-hook-on-file-name '("COMMIT_EDITMSG")
+  "Holds file names that won't be affected by clocker's `after-save-hook'.
+
+If a buffer represents a file with a name that exists on this list, the
+`after-save-hook' won't do any checks if not clocked in"
+  :group 'clocker)
+
 (defcustom clocker-keep-org-file-always-visible t
   "Opens a buffer with the org-file if hidden.
 
@@ -152,11 +159,14 @@ list (LHS)."
 ;;;;;;;;;;;;;;;;;;;;
 ;; find buffer with org-file open
 
-(defun clocker-should-perform-save-hook? (file-ext)
+(defun clocker-should-perform-save-hook? (file-name)
   "Check if clocker ignores saves on file with extension file-ext"
-  (and
-   (not (-contains? clocker-skip-after-save-hook-on-extensions file-ext))
-   (not (-contains? clocker-skip-after-save-hook-on-mode (symbol-name major-mode)))))
+  (let ((file-ext (and file-name
+                       (file-name-extension file-name))))
+    (and
+     (not (-contains? clocker-skip-after-save-hook-on-file-name (file-name-base file-name)))
+     (not (-contains? clocker-skip-after-save-hook-on-extensions file-ext))
+     (not (-contains? clocker-skip-after-save-hook-on-mode (symbol-name major-mode))))))
 
 (defun clocker-first-org-buffer ()
   "Return first buffer that has an .org extension."
@@ -313,10 +323,9 @@ tree hierarchy and finds the closest org file."
       ;; called
       (setq clocker-on-auto-save nil)
     ;; else
-    (let* ((current-file (buffer-file-name))
-           (current-ext (and current-file (file-name-extension current-file))))
+    (let* ((current-file (buffer-file-name)))
       (when (and current-file
-                 (clocker-should-perform-save-hook? current-ext))
+                 (clocker-should-perform-save-hook? current-file))
 
           (if (not (clocker-org-clocking-p))
               (progn
