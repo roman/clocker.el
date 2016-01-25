@@ -63,7 +63,7 @@ If a file extension is here, the `after-save-hook' won't do any
 checks if not clocked in"
   :group 'clocker)
 
-(defcustom clocker-skip-after-save-hook-on-mode '("git-commit-mode")
+(defcustom clocker-skip-after-save-hook-on-mode '()
   "Holds mode names that won't be affected by clocker's `after-save-hook'.
 
 If a buffer has mode that belongs to this list, the
