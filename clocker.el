@@ -363,7 +363,11 @@ tree hierarchy and finds the closest org file."
   (interactive
    (list (ido-completing-read
           "Which mode? "
-          (get-major-modes-list)
+          (mapcar
+           (lambda (buf)
+             (symbol-name
+              (buffer-local-value 'major-mode (get-buffer buf))))
+           (buffer-list))
           nil
           nil
           (symbol-name major-mode))))
