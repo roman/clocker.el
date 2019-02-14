@@ -6,7 +6,7 @@
 ;; Author: Roman Gonzalez <romanandreg@gmail.com>
 ;; Maintainer: Roman Gonzalez <romanandreg@gmail.com>
 ;; Version: 0.0.11
-;; Package-Requires: ((projectile "0.11.0") (dash "2.10"))
+;; Package-Requires: ((projectile "0.11.0") (dash "2.10") (spaceline "2.0.1"))
 ;; Keywords: org
 
 ;; This file is not part of GNU Emacs.
@@ -26,6 +26,7 @@
 (require 'em-glob)
 (require 'org-clock)
 (require 'projectile)
+(require 'spaceline)
 (require 'vc-git)
 
 ;;; Code:
@@ -62,6 +63,7 @@ clock-in."
 If a file extension is here, the `after-save-hook' won't do any
 checks if not clocked in"
   :group 'clocker)
+
 
 (defcustom clocker-skip-after-save-hook-on-mode '()
   "Holds mode names that won't be affected by clocker's `after-save-hook'.
@@ -105,30 +107,18 @@ the `auto-save-hook' is called.  Once the clocker
   (and (fboundp 'org-clocking-p)
        (org-clocking-p)))
 
+
 (eval-after-load 'powerline
-  '(defconst clocker-mode-line-widget
-     (powerline-raw "CLOCK-IN "
-                    'clocker-mode-line-clock-in-face
-                    'l)
-     "CLOCK-IN powerline widget."))
-
-(defun clocker-add-clock-in-to-mode-line (lhs)
-  "Add a CLOCK-IN string to the mode-line list.
-
-This string is put in the second position on the given mode-line
-list (LHS)."
-  (let ((new-lhs
-         (if (not (clocker-org-clocking-p))
-             (-insert-at (if (version< spacemacs-version "0.102") 1 3)
-                         clocker-mode-line-widget
-                         lhs)
-           lhs)))
-    new-lhs))
+  '(spaceline-define-segment clocker-status
+     "CLOCK-IN powerline widget."
+     (when (and clocker-mode (not (clocker-org-clocking-p)))
+       " CLOCK-IN ")
+     :face 'clocker-mode-line-clock-in-face))
 
 ;; shamelessly stolen from
 ;; http://stackoverflow.com/questions/5536304/emacs-stock-major-modes-list#answer-19165202
 (defun clocker-get-major-modes-list ()
-  "Return a list of all major-modes regsitered on the editor"
+  "Return a list of all major-modes registered on the editor"
   (let (output)
     (mapatoms
      #'(lambda (fn-symbol)
@@ -272,7 +262,10 @@ With prefix arg SELECT, offer recently clocked tasks for selection."
                                (if clocker-search-org-buffer-in-all-frames
                                    t
                                  0))
-      (pop-to-buffer org-buffer nil t)
+      (pop-to-buffer org-buffer
+                     t ;; display a new window with the org file
+                     t ;; don't put this navigation to the cache of visited buffers
+                     )
       (if (or (< m (point-min)) (> m (point-max))) (widen))
       (goto-char m)
       (org-show-entry)
@@ -329,12 +322,12 @@ tree hierarchy and finds the closest org file."
 
           (if (not (clocker-org-clocking-p))
               (progn
+                (y-or-n-p question-msg)
                 (clocker-open-org-file)
-                (yes-or-no-p question-msg)
                 (when raise-exception (throw 'clocker-clock-in t)))
             ;; else
             (when clocker-keep-org-file-always-visible
-              (clocker-org-clock-goto)))))))
+              (clocker-org-clock-goto nil)))))))
 
 ;;;###autoload
 (defun clocker-auto-save-hook ()
